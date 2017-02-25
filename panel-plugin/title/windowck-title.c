@@ -101,7 +101,7 @@ static void on_icon_changed(WnckWindow *controlwindow, WindowckPlugin *wckp)
 static void on_name_changed (WnckWindow *controlwindow, WindowckPlugin *wckp)
 {
     gint i, n;
-    
+
     const gchar *title_text;
 
     if (controlwindow
@@ -160,7 +160,7 @@ static void on_name_changed (WnckWindow *controlwindow, WindowckPlugin *wckp)
                         }
                     }
                     title_markup = g_markup_printf_escaped("<span font=\"%s\" color=\"%s\">%s</span><span font=\"%s\" color=\"%s\">\n%s</span>", title_font, title_color, part[n-1], subtitle_font, title_color,  subtitle);
-                    g_free (subtitle);
+                    free (subtitle);
                 }
                 else
                 {
