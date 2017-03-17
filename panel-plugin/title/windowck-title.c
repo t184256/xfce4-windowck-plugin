@@ -313,6 +313,42 @@ gboolean on_title_pressed(GtkWidget *title, GdkEventButton *event, WindowckPlugi
         else /* left-click */
         {
             wnck_window_activate(wckp->win->controlwindow, gtk_get_current_event_time());
+
+            // WnckScreen *screen = wnck_screen_get_default ();
+            // wnck_screen_force_update (screen);
+            WnckWindow *active_window = wckp->win->controlwindow;
+
+            if (!wnck_window_is_maximized(active_window)) return TRUE;
+
+            GdkDisplay *gdkdisp = gdk_display_get_default ();
+            // Gdk 3
+            // GdkDevice *mouse = gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdkdisp));
+            GdkDevice *mouse = gdk_device_get_core_pointer();
+            Display *d = gdk_x11_display_get_xdisplay(gdkdisp);
+            XEvent xev;
+            Atom netMoveResize = XInternAtom(d, "_NET_WM_MOVERESIZE", FALSE);
+            xev.xclient.type = ClientMessage;
+            xev.xclient.message_type = netMoveResize;
+            xev.xclient.display = d;
+            xev.xclient.window = wnck_window_get_xid(active_window);
+            xev.xclient.format = 32;
+
+            // Gdk 3
+            // int x, y;
+            // gdk_device_get_position(mouse, NULL, &x, &y);
+
+            // TODO: Provide a second argument to gdk_device_get_state
+            gdouble xy[2];
+            gdk_device_get_state(mouse, NULL, xy, NULL);
+
+            xev.xclient.data.l[0] = xy[0];
+            xev.xclient.data.l[1] = xy[1];
+            xev.xclient.data.l[2] = 8; // _NET_WM_MOVERESIZE_MOVE
+            xev.xclient.data.l[3] = Button1;
+            xev.xclient.data.l[4] = 0;
+            XUngrabPointer(d, CurrentTime);
+
+            XSendEvent(d, RootWindow(d, 0), FALSE, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
         }
         return TRUE;
     }
